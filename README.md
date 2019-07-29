@@ -4,6 +4,8 @@ It contains the original tutorial and the modified version of the game made by m
 
 Original repository [here](https://github.com/ztiromoritz/pico-8-shooter).
 
+Ver. 0.0.2
+
 ### Added features
 - Screen bounds check for the ship
 
