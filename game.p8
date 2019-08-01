@@ -2,6 +2,11 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 
+--strings
+game_over_label = "game over"
+score_label = "" -- updated at game over
+continue_label = "press \x8e to continue"
+
 --game state
 game={}
 
@@ -72,18 +77,21 @@ function update_game()
     e.m_y += 1.3
     e.x = e.r*sin(e.d*t/50) + e.m_x
     e.y = e.r*cos(t/50) + e.m_y
-    if coll(ship,e) and not ship.imm then
+    if coll(ship,e) and not ship.imm and ship.h > 0 then
       ship.imm = true
       ship.h -= 1
       if ship.h <= 0 then
-        game_over()
+        score_label = "score: "..ship.p
+        explode(ship.x,ship.y)
+        sfx(2)
+        --this timestamp is used to wait some seconds before making the game over screen appear
+        death_time_stamp = t
       end
     end
     
     if e.y > 150 then
       del(enemies,e)
     end
-    
   end
   
   for b in all(bullets) do
@@ -99,21 +107,36 @@ function update_game()
         del(bullets,b)
         ship.p += 1
         explode(e.x,e.y)
+        -- Explosion sound
+        sfx(0)
       end
     end
   end
-  if(t%6<3) then
-    ship.sp=1
+
+  if ship.h <= 0 then
+    --ship disappears after it loses all lives
+    ship.sp=0
   else
-    ship.sp=2
+    if(t%6<3) then
+      ship.sp=1
+    else
+      ship.sp=2
+    end
   end
 
-  -- Here it checks if the ship is going out of the screen
-  if btn(0) and ship.x>0 then ship.x-=1 end
-  if btn(1) and ship.x<128-7 then ship.x+=1 end
-  if btn(2) and ship.y>0 then ship.y-=1 end
-  if btn(3) and ship.y<128-7 then ship.y+=1 end
-  if btnp(4) then fire() end
+  -- The ship only moves and shoots if it still has lives
+  if ship.h > 0 then
+    -- Here it checks if the ship is going out of the screen
+    if btn(0) and ship.x>0 then ship.x-=1 end
+    if btn(1) and ship.x<128-7 then ship.x+=1 end
+    if btn(2) and ship.y>0 then ship.y-=1 end
+    if btn(3) and ship.y<128-7 then ship.y+=1 end
+    if btnp(4) then fire() end
+  end
+
+  if ship.h <= 0 then
+    if t == death_time_stamp + 90 then game_over() end
+  end
 end
 
 function draw_game()
@@ -123,6 +146,7 @@ function draw_game()
   end
   
   print(ship.p,9)
+
   if not ship.imm or t%8 < 4 then
     spr(ship.sp,ship.x,ship.y)
   end
@@ -150,19 +174,20 @@ end
 
 --Game Over game state
 function game_over()
+		sfx(1)
   game.upd = update_over
   game.drw = draw_over
 end
   
 function update_over()
-    --Wait 3 seconds before restarting the game
-    wait(90)
-    start()
+    if (btn(4)) then start() end
 end
   
 function draw_over()
   cls()
-  print("game over",50,50,4)
+  print(game_over_label,hcenter(game_over_label),50,4)
+  print(score_label,hcenter(score_label),60,4)
+  print(continue_label,hcenter(continue_label),80,4)
 end
 
 
@@ -255,6 +280,23 @@ function fire()
     box = {x1=2,y1=0,x2=5,y2=4}
   }
   add(bullets,b)
+end
+
+--String utils
+
+function hcenter(s)
+  -- screen center minus the
+  -- string length times the 
+  -- pixels in a char's width,
+  -- cut in half
+  return 64-#s*2
+end
+
+function vcenter(s)
+  -- screen center minus the
+  -- string height in pixels,
+  -- cut in half
+  return 61
 end
 
 __gfx__
@@ -408,3 +450,7 @@ __label__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
+__sfx__
+000700001e6101f6101f6102d6102d610006100261021600196000d6000d600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000001a05019050180501705017050170500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0110000000660216603c66000660216603c6620000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

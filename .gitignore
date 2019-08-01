@@ -1,1 +1,6 @@
 .DS_Store
+pico8.exe
+pico8.dat
+basic.p8
+.gitignore
+SDL2.dll
