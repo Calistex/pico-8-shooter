@@ -4,7 +4,7 @@ It contains the original tutorial and the modified version of the game made by m
 
 Original repository [here](https://github.com/ztiromoritz/pico-8-shooter).
 
-Ver. 0.0.3  
+Ver. 0.4.0
 [Changelog](https://github.com/Calistex/pico-8-shooter/blob/master/changelog.md)
 
 ### Added features
