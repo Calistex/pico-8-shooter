@@ -7,6 +7,9 @@ game_over_label = "game over"
 score_label = "" -- updated at game over
 continue_label = "press \x8e to continue"
 
+--possible star colors
+star_colors = {1,4,6}
+
 --game state
 game={}
 
@@ -58,12 +61,12 @@ function update_game()
     st.y += st.s
     if st.y >= 128 then
       st.y = 0
-      st.x=rnd(128)
+      st.x = rnd(128)
     end
   end
   
   for ex in all(explosions) do
-    ex.t+=1
+    ex.t += 1
     if ex.t == 13 then
       del(explosions, ex)
     end
@@ -78,6 +81,7 @@ function update_game()
     e.x = e.r*sin(e.d*t/50) + e.m_x
     e.y = e.r*cos(t/50) + e.m_y
     if coll(ship,e) and not ship.imm and ship.h > 0 then
+      
       ship.imm = true
       ship.h -= 1
       if ship.h <= 0 then
@@ -86,6 +90,9 @@ function update_game()
         sfx(2)
         --this timestamp is used to wait some seconds before making the game over screen appear
         death_time_stamp = t
+      else
+        --this is the case when the ship is damaged but still not game over
+        sfx(3)
       end
     end
     
@@ -95,8 +102,8 @@ function update_game()
   end
   
   for b in all(bullets) do
-    b.x+=b.dx
-    b.y+=b.dy
+    b.x += b.dx
+    b.y += b.dy
     if b.x < 0 or b.x > 128 or
     b.y < 0 or b.y > 128 then
       del(bullets,b)
@@ -115,22 +122,22 @@ function update_game()
 
   if ship.h <= 0 then
     --ship disappears after it loses all lives
-    ship.sp=0
+    ship.sp = 0
   else
     if(t%6<3) then
-      ship.sp=1
+      ship.sp = 1
     else
-      ship.sp=2
+      ship.sp = 2
     end
   end
 
   -- The ship only moves and shoots if it still has lives
   if ship.h > 0 then
     -- Here it checks if the ship is going out of the screen
-    if btn(0) and ship.x>0 then ship.x-=1 end
-    if btn(1) and ship.x<128-7 then ship.x+=1 end
-    if btn(2) and ship.y>0 then ship.y-=1 end
-    if btn(3) and ship.y<128-7 then ship.y+=1 end
+    if btn(0) and ship.x>0 then ship.x -= ship.speed end
+    if btn(1) and ship.x<128-7 then ship.x += ship.speed end
+    if btn(2) and ship.y>0 then ship.y -= ship.speed end
+    if btn(3) and ship.y<128-7 then ship.y += ship.speed end
     if btnp(4) then fire() end
   end
 
@@ -142,10 +149,10 @@ end
 function draw_game()
   cls()
   for st in all(stars) do
-    pset(st.x,st.y,6)
+    pset(st.x,st.y,st.col)
   end
   
-  print(ship.p,9)
+  print(ship.p,6)
 
   if not ship.imm or t%8 < 4 then
     spr(ship.sp,ship.x,ship.y)
@@ -200,45 +207,46 @@ function _init()
 end
 
 function reset_game()
-  t=0
-  
+  t = 0
   ship = {
-    sp=1,
-    x=60,
-    y=100,
-    h=4,
-    p=0,
-    t=0,
-    imm=false,
+    sp = 1,
+    x = 60,
+    y = 100,
+    h = 4,
+    p = 0,
+    t = 0,
+    speed = 2,
+    imm = false,
     box = {x1=0,y1=0,x2=7,y2=7}}
   bullets = {}
   enemies = {}
   explosions = {}
   stars = {}
   
-  for i=1,128 do
+  for i = 1,128 do
     add(stars,{
-      x=rnd(128),
-      y=rnd(128),
-      s=rnd(2)+1
+      x = rnd(128),
+      y = rnd(128),
+      s = rnd(2),
+      col = get_star_color()
     })
   end 
 end
   
 function respawn()
   local n = flr(rnd(9))+2
-  for i=1,n do
+  for i = 1,n do
     local d = -1
-    if rnd(1)<0.5 then d=1 end
+    if rnd(1)<0.5 then d = 1 end
     add(enemies, {
-      sp=17,
-      m_x=i*16,
-      m_y=-20-i*8,
-      d=d,
-      x=-32,
-      y=-32,
-      r=12,
-      box = {x1=0,y1=0,x2=7,y2=7}
+      sp = 17,
+      m_x = i*16,
+      m_y = -20-i*8,
+      d = d,
+      x = -32,
+      y = -32,
+      r = 12,
+      box = {x1 = 0,y1 = 0,x2 = 7,y2 = 7}
     })
   end
 end
@@ -265,19 +273,23 @@ function coll(a,b)
   end
   return true 
 end
+
+function get_star_color()
+  return star_colors[flr(rnd(4)+1)]
+end
   
 function explode(x,y)
-  add(explosions,{x=x,y=y,t=0})
+  add(explosions,{x = x,y = y,t = 0})
 end
   
 function fire()
   local b = {
-    sp=3,
-    x=ship.x,
-    y=ship.y,
-    dx=0,
-    dy=-3,
-    box = {x1=2,y1=0,x2=5,y2=4}
+    sp = 3,
+    x = ship.x,
+    y = ship.y,
+    dx = 0,
+    dy = -3,
+    box = {x1 = 2,y1 = 0,x2 = 5,y2 = 4}
   }
   add(bullets,b)
 end
@@ -454,3 +466,4 @@ __sfx__
 000700001e6101f6101f6102d6102d610006100261021600196000d6000d600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 011000001a05019050180501705017050170500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0110000000660216603c66000660216603c6620000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000400000575005750057500270002700057500575005750250002200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
