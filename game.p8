@@ -2,15 +2,20 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 
---strings
+-- opening cartdata
+cartdata("hiscore")
+
+-- strings
 game_over_label = "game over"
 score_label = "" -- updated at game over
+hiscore_label = "" -- updated at game over
+newhiscore_label = "new high score!"
 continue_label = "press \x8e to continue"
 
---possible star colors
+-- possible star colors
 star_colors = {1,4,6}
 
---game state
+-- game state
 game={}
 
 function _update()
@@ -22,25 +27,25 @@ function _draw()
 end
 
 
---Splash Screen game state
+-- Splash Screen game state
 function show_splash()
   game.upd = splash_screen_update
   game.drw = splash_screen_draw
 end
 
 function splash_screen_update()
-  --update the splash screen
-  --change to the next state
-  --when ready
+  -- update the splash screen
+  -- change to the next state
+  -- when ready
   start()
 end
 
 function splash_screen_draw()
-  --draw the splash screen
+  -- Draw the splash screen
 end
 
 
---Game Start game state
+-- Game Start game state
 function start()
   reset_game()
   game.upd = update_game
@@ -81,17 +86,16 @@ function update_game()
     e.x = e.r*sin(e.d*t/50) + e.m_x
     e.y = e.r*cos(t/50) + e.m_y
     if coll(ship,e) and not ship.imm and ship.h > 0 then
-      
       ship.imm = true
       ship.h -= 1
       if ship.h <= 0 then
         score_label = "score: "..ship.p
         explode(ship.x,ship.y)
         sfx(2)
-        --this timestamp is used to wait some seconds before making the game over screen appear
+        -- This timestamp is used to wait some seconds before making the game over screen appear
         death_time_stamp = t
       else
-        --this is the case when the ship is damaged but still not game over
+        -- This is the case when the ship is damaged but still not game over
         sfx(3)
       end
     end
@@ -121,7 +125,7 @@ function update_game()
   end
 
   if ship.h <= 0 then
-    --ship disappears after it loses all lives
+    -- The ship disappears after it loses all lives
     ship.sp = 0
   else
     if(t%6<3) then
@@ -152,7 +156,7 @@ function draw_game()
     pset(st.x,st.y,st.col)
   end
   
-  print(ship.p,6)
+  print(ship.p,0,0,7)
 
   if not ship.imm or t%8 < 4 then
     spr(ship.sp,ship.x,ship.y)
@@ -179,22 +183,35 @@ function draw_game()
   end
 end
 
---Game Over game state
+-- Game Over game state
 function game_over()
-		sfx(1)
+	sfx(1)
+  -- Here it checks if there is a new high score, fetching the previous one
+  newhiscore = false
+  hiscore = dget(0)
+  if hiscore < ship.p then
+   dset(0, ship.p) 
+   hiscore = ship.p
+   newhiscore = true
+  end
+  hiscore_label = "high score: "..hiscore
   game.upd = update_over
   game.drw = draw_over
 end
   
 function update_over()
-    if (btn(4)) then start() end
+  if (btn(4)) then start() end
 end
   
 function draw_over()
   cls()
-  print(game_over_label,hcenter(game_over_label),50,4)
-  print(score_label,hcenter(score_label),60,4)
-  print(continue_label,hcenter(continue_label),80,4)
+  print(game_over_label,hcenter(game_over_label),30,4)
+  print(score_label,hcenter(score_label),50,7)
+  print(hiscore_label,hcenter(hiscore_label),60,7)
+  if newhiscore == true then
+    print(newhiscore_label,hcenter(hiscore_label),70,10)
+  end
+  print(continue_label,hcenter(continue_label),90,7)
 end
 
 
@@ -217,7 +234,8 @@ function reset_game()
     t = 0,
     speed = 2,
     imm = false,
-    box = {x1=0,y1=0,x2=7,y2=7}}
+    box = {x1 = 0,y1 = 0,x2 = 7,y2 = 7}
+  }
   bullets = {}
   enemies = {}
   explosions = {}
@@ -294,7 +312,7 @@ function fire()
   add(bullets,b)
 end
 
---String utils
+-- String utils
 
 function hcenter(s)
   -- screen center minus the
