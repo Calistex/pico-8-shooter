@@ -4,16 +4,16 @@ It contains the original tutorial and the modified version of the game made by m
 
 Original repository [here](https://github.com/ztiromoritz/pico-8-shooter).
 
-Ver. 0.4.0
+Ver. 0.5.0
 [Changelog](https://github.com/Calistex/pico-8-shooter/blob/master/changelog.md)
 
 ### Added features
 - Screen bounds check for the ship
+- High score screen at game over
 
 ### Planned changes
 - Assets change
 - New enemy types and patterns
 - Title sceen
 - Music and sound effects
-- Hiscore screen
 - Android port and Google Play release
