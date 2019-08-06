@@ -1,5 +1,8 @@
 #Changelog
 
+### Ver. 0.5.0
+- Added high score
+
 ### Ver. 0.4.0
 - Changed star colors
 - Added more sfx
