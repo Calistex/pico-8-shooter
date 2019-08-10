@@ -1,5 +1,11 @@
 #Changelog
 
+
+### Ver. 0.6.0
+- Added animation when ship turns left and right
+- Star now move when the player moves horizontally
+- Added a draft main screen
+
 ### Ver. 0.5.0
 - Added high score
 
